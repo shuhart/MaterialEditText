@@ -1,5 +1,7 @@
 package com.rengwuxian.materialedittext;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -32,8 +34,6 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.nineoldandroids.animation.ArgbEvaluator;
-import com.nineoldandroids.animation.ObjectAnimator;
 import com.rengwuxian.materialedittext.validation.METLengthChecker;
 import com.rengwuxian.materialedittext.validation.METValidator;
 
@@ -316,138 +316,132 @@ public class MaterialEditText extends AppCompatEditText {
   private METLengthChecker lengthChecker;
 
   public MaterialEditText(Context context) {
-    super(context);
-    init(context, null);
+    this(context, null);
   }
 
   public MaterialEditText(Context context, AttributeSet attrs) {
-    super(context, attrs);
-    init(context, attrs);
+    this(context, attrs, 0);
   }
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   public MaterialEditText(Context context, AttributeSet attrs, int style) {
     super(context, attrs, style);
-    init(context, attrs);
-  }
-
-  private void init(Context context, AttributeSet attrs) {
-    if (isInEditMode()) {
-        return;
-    }
-
-    iconSize = getPixel(32);
-    iconOuterWidth = getPixel(48);
-    iconOuterHeight = getPixel(32);
-
-    bottomSpacing = getResources().getDimensionPixelSize(R.dimen.inner_components_spacing);
-    bottomEllipsisSize = getResources().getDimensionPixelSize(R.dimen.bottom_ellipsis_height);
-
-    // default baseColor is black
-    int defaultBaseColor = Color.BLACK;
-
-    TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText);
-    textColorStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColor);
-    textColorHintStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColorHint);
-    baseColor = typedArray.getColor(R.styleable.MaterialEditText_met_baseColor, defaultBaseColor);
-
-    // retrieve the default primaryColor
-    int defaultPrimaryColor;
-    TypedValue primaryColorTypedValue = new TypedValue();
-    try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        context.getTheme().resolveAttribute(android.R.attr.colorPrimary, primaryColorTypedValue, true);
-        defaultPrimaryColor = primaryColorTypedValue.data;
-      } else {
-        throw new RuntimeException("SDK_INT less than LOLLIPOP");
+      if (isInEditMode()) {
+          return;
       }
-    } catch (Exception e) {
+
+      iconSize = getPixel(32);
+      iconOuterWidth = getPixel(48);
+      iconOuterHeight = getPixel(32);
+
+      bottomSpacing = getResources().getDimensionPixelSize(R.dimen.inner_components_spacing);
+      bottomEllipsisSize = getResources().getDimensionPixelSize(R.dimen.bottom_ellipsis_height);
+
+      // default baseColor is black
+      int defaultBaseColor = Color.BLACK;
+
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText, 0, style);
+      textColorStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColor);
+      textColorHintStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColorHint);
+      baseColor = typedArray.getColor(R.styleable.MaterialEditText_met_baseColor, defaultBaseColor);
+
+      // retrieve the default primaryColor
+      int defaultPrimaryColor;
+      TypedValue primaryColorTypedValue = new TypedValue();
       try {
-        int colorPrimaryId = getResources().getIdentifier("colorPrimary", "attr", getContext().getPackageName());
-        if (colorPrimaryId != 0) {
-          context.getTheme().resolveAttribute(colorPrimaryId, primaryColorTypedValue, true);
-          defaultPrimaryColor = primaryColorTypedValue.data;
-        } else {
-          throw new RuntimeException("colorPrimary not found");
-        }
-      } catch (Exception e1) {
-        defaultPrimaryColor = baseColor;
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+              context.getTheme().resolveAttribute(android.R.attr.colorPrimary, primaryColorTypedValue, true);
+              defaultPrimaryColor = primaryColorTypedValue.data;
+          } else {
+              throw new RuntimeException("SDK_INT less than LOLLIPOP");
+          }
+      } catch (Exception e) {
+          try {
+              int colorPrimaryId = getResources().getIdentifier("colorPrimary", "attr", getContext().getPackageName());
+              if (colorPrimaryId != 0) {
+                  context.getTheme().resolveAttribute(colorPrimaryId, primaryColorTypedValue, true);
+                  defaultPrimaryColor = primaryColorTypedValue.data;
+              } else {
+                  throw new RuntimeException("colorPrimary not found");
+              }
+          } catch (Exception e1) {
+              defaultPrimaryColor = baseColor;
+          }
       }
-    }
 
-    primaryColor = typedArray.getColor(R.styleable.MaterialEditText_met_primaryColor, defaultPrimaryColor);
-    setFloatingLabelInternal(typedArray.getInt(R.styleable.MaterialEditText_met_floatingLabel, 0));
-    errorColor = typedArray.getColor(R.styleable.MaterialEditText_met_errorColor, Color.parseColor("#e7492E"));
-    minCharacters = typedArray.getInt(R.styleable.MaterialEditText_met_minCharacters, 0);
-    maxCharacters = typedArray.getInt(R.styleable.MaterialEditText_met_maxCharacters, 0);
-    singleLineEllipsis = typedArray.getBoolean(R.styleable.MaterialEditText_met_singleLineEllipsis, false);
-    helperText = typedArray.getString(R.styleable.MaterialEditText_met_helperText);
-    helperTextColor = typedArray.getColor(R.styleable.MaterialEditText_met_helperTextColor, -1);
-    minBottomTextLines = typedArray.getInt(R.styleable.MaterialEditText_met_minBottomTextLines, 0);
-    String fontPathForAccent = typedArray.getString(R.styleable.MaterialEditText_met_accentTypeface);
-    if (fontPathForAccent != null && !isInEditMode()) {
-      accentTypeface = getCustomTypeface(fontPathForAccent);
-      textPaint.setTypeface(accentTypeface);
-    }
-    String fontPathForView = typedArray.getString(R.styleable.MaterialEditText_met_typeface);
-    if (fontPathForView != null && !isInEditMode()) {
-      typeface = getCustomTypeface(fontPathForView);
-      setTypeface(typeface);
-    }
-    floatingLabelText = typedArray.getString(R.styleable.MaterialEditText_met_floatingLabelText);
-    if (floatingLabelText == null) {
-      floatingLabelText = getHint();
-    }
-    floatingLabelPadding = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_floatingLabelPadding, bottomSpacing);
-    floatingLabelTextSize = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_floatingLabelTextSize, getResources().getDimensionPixelSize(R.dimen.floating_label_text_size));
-    floatingLabelTextColor = typedArray.getColor(R.styleable.MaterialEditText_met_floatingLabelTextColor, -1);
-    floatingLabelAnimating = typedArray.getBoolean(R.styleable.MaterialEditText_met_floatingLabelAnimating, true);
-    bottomTextSize = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_bottomTextSize, getResources().getDimensionPixelSize(R.dimen.bottom_text_size));
-    hideUnderline = typedArray.getBoolean(R.styleable.MaterialEditText_met_hideUnderline, false);
-    underlineColor = typedArray.getColor(R.styleable.MaterialEditText_met_underlineColor, -1);
-    autoValidate = typedArray.getBoolean(R.styleable.MaterialEditText_met_autoValidate, false);
-    iconLeftBitmaps = generateIconBitmaps(typedArray.getResourceId(R.styleable.MaterialEditText_met_iconLeft, -1));
-    iconRightBitmaps = generateIconBitmaps(typedArray.getResourceId(R.styleable.MaterialEditText_met_iconRight, -1));
-    showClearButton = typedArray.getBoolean(R.styleable.MaterialEditText_met_clearButton, false);
-    clearButtonBitmaps = generateIconBitmaps(R.drawable.met_ic_clear);
-    iconPadding = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_iconPadding, getPixel(16));
-    floatingLabelAlwaysShown = typedArray.getBoolean(R.styleable.MaterialEditText_met_floatingLabelAlwaysShown, false);
-    helperTextAlwaysShown = typedArray.getBoolean(R.styleable.MaterialEditText_met_helperTextAlwaysShown, false);
-    validateOnFocusLost = typedArray.getBoolean(R.styleable.MaterialEditText_met_validateOnFocusLost, false);
-    checkCharactersCountAtBeginning = typedArray.getBoolean(R.styleable.MaterialEditText_met_checkCharactersCountAtBeginning, true);
-    typedArray.recycle();
+      primaryColor = typedArray.getColor(R.styleable.MaterialEditText_met_primaryColor, defaultPrimaryColor);
+      setFloatingLabelInternal(typedArray.getInt(R.styleable.MaterialEditText_met_floatingLabel, 0));
+      errorColor = typedArray.getColor(R.styleable.MaterialEditText_met_errorColor, Color.parseColor("#e7492E"));
+      minCharacters = typedArray.getInt(R.styleable.MaterialEditText_met_minCharacters, 0);
+      maxCharacters = typedArray.getInt(R.styleable.MaterialEditText_met_maxCharacters, 0);
+      singleLineEllipsis = typedArray.getBoolean(R.styleable.MaterialEditText_met_singleLineEllipsis, false);
+      helperText = typedArray.getString(R.styleable.MaterialEditText_met_helperText);
+      helperTextColor = typedArray.getColor(R.styleable.MaterialEditText_met_helperTextColor, -1);
+      minBottomTextLines = typedArray.getInt(R.styleable.MaterialEditText_met_minBottomTextLines, 0);
+      String fontPathForAccent = typedArray.getString(R.styleable.MaterialEditText_met_accentTypeface);
+      if (fontPathForAccent != null && !isInEditMode()) {
+          accentTypeface = getCustomTypeface(fontPathForAccent);
+          textPaint.setTypeface(accentTypeface);
+      }
+      String fontPathForView = typedArray.getString(R.styleable.MaterialEditText_met_typeface);
+      if (fontPathForView != null && !isInEditMode()) {
+          typeface = getCustomTypeface(fontPathForView);
+          setTypeface(typeface);
+      }
+      floatingLabelText = typedArray.getString(R.styleable.MaterialEditText_met_floatingLabelText);
+      if (floatingLabelText == null) {
+          floatingLabelText = getHint();
+      }
+      floatingLabelPadding = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_floatingLabelPadding, bottomSpacing);
+      floatingLabelTextSize = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_floatingLabelTextSize, getResources().getDimensionPixelSize(R.dimen.floating_label_text_size));
+      floatingLabelTextColor = typedArray.getColor(R.styleable.MaterialEditText_met_floatingLabelTextColor, -1);
+      floatingLabelAnimating = typedArray.getBoolean(R.styleable.MaterialEditText_met_floatingLabelAnimating, true);
+      bottomTextSize = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_bottomTextSize, getResources().getDimensionPixelSize(R.dimen.bottom_text_size));
+      hideUnderline = typedArray.getBoolean(R.styleable.MaterialEditText_met_hideUnderline, false);
+      underlineColor = typedArray.getColor(R.styleable.MaterialEditText_met_underlineColor, -1);
+      autoValidate = typedArray.getBoolean(R.styleable.MaterialEditText_met_autoValidate, false);
+      iconLeftBitmaps = generateIconBitmaps(typedArray.getResourceId(R.styleable.MaterialEditText_met_iconLeft, -1));
+      iconRightBitmaps = generateIconBitmaps(typedArray.getResourceId(R.styleable.MaterialEditText_met_iconRight, -1));
+      showClearButton = typedArray.getBoolean(R.styleable.MaterialEditText_met_clearButton, false);
+      clearButtonBitmaps = generateIconBitmaps(R.drawable.met_ic_clear);
+      iconPadding = typedArray.getDimensionPixelSize(R.styleable.MaterialEditText_met_iconPadding, getPixel(16));
+      floatingLabelAlwaysShown = typedArray.getBoolean(R.styleable.MaterialEditText_met_floatingLabelAlwaysShown, false);
+      helperTextAlwaysShown = typedArray.getBoolean(R.styleable.MaterialEditText_met_helperTextAlwaysShown, false);
+      validateOnFocusLost = typedArray.getBoolean(R.styleable.MaterialEditText_met_validateOnFocusLost, false);
+      checkCharactersCountAtBeginning = typedArray.getBoolean(R.styleable.MaterialEditText_met_checkCharactersCountAtBeginning, true);
+      typedArray.recycle();
 
-    int[] paddings = new int[]{
-        android.R.attr.padding, // 0
-        android.R.attr.paddingLeft, // 1
-        android.R.attr.paddingTop, // 2
-        android.R.attr.paddingRight, // 3
-        android.R.attr.paddingBottom // 4
-    };
-    TypedArray paddingsTypedArray = context.obtainStyledAttributes(attrs, paddings);
-    int padding = paddingsTypedArray.getDimensionPixelSize(0, 0);
-    innerPaddingLeft = paddingsTypedArray.getDimensionPixelSize(1, padding);
-    innerPaddingTop = paddingsTypedArray.getDimensionPixelSize(2, padding);
-    innerPaddingRight = paddingsTypedArray.getDimensionPixelSize(3, padding);
-    innerPaddingBottom = paddingsTypedArray.getDimensionPixelSize(4, padding);
-    paddingsTypedArray.recycle();
+      int[] paddings = new int[]{
+              android.R.attr.padding, // 0
+              android.R.attr.paddingLeft, // 1
+              android.R.attr.paddingTop, // 2
+              android.R.attr.paddingRight, // 3
+              android.R.attr.paddingBottom // 4
+      };
+      TypedArray paddingsTypedArray = context.obtainStyledAttributes(attrs, paddings);
+      int padding = paddingsTypedArray.getDimensionPixelSize(0, 0);
+      innerPaddingLeft = paddingsTypedArray.getDimensionPixelSize(1, padding);
+      innerPaddingTop = paddingsTypedArray.getDimensionPixelSize(2, padding);
+      innerPaddingRight = paddingsTypedArray.getDimensionPixelSize(3, padding);
+      innerPaddingBottom = paddingsTypedArray.getDimensionPixelSize(4, padding);
+      paddingsTypedArray.recycle();
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-      setBackground(null);
-    } else {
-      setBackgroundDrawable(null);
-    }
-    if (singleLineEllipsis) {
-      TransformationMethod transformationMethod = getTransformationMethod();
-      setSingleLine();
-      setTransformationMethod(transformationMethod);
-    }
-    initMinBottomLines();
-    initPadding();
-    initText();
-    initFloatingLabel();
-    initTextWatcher();
-    checkCharactersCount();
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+          setBackground(null);
+      } else {
+          setBackgroundDrawable(null);
+      }
+      if (singleLineEllipsis) {
+          TransformationMethod transformationMethod = getTransformationMethod();
+          setSingleLine();
+          setTransformationMethod(transformationMethod);
+      }
+      initMinBottomLines();
+      initPadding();
+      initText();
+      initFloatingLabel();
+      initTextWatcher();
+      checkCharactersCount();
   }
 
   private void initText() {
@@ -1380,7 +1374,7 @@ public class MaterialEditText extends AppCompatEditText {
       int floatingLabelStartY = (int) (innerPaddingTop + floatingLabelTextSize + floatingLabelPadding - distance * (floatingLabelAlwaysShown ? 1 : floatingLabelFraction) + getScrollY());
 
       // calculate the alpha
-      int alpha = ((int) ((floatingLabelAlwaysShown ? 1 : floatingLabelFraction) * 0xff * (0.74f * focusFraction * (isEnabled() ? 1 : 0) + 0.26f) * (floatingLabelTextColor != -1 ? 1 : Color.alpha(floatingLabelTextColor) / 256f)));
+      int alpha = ((int) ((floatingLabelAlwaysShown ? 1 : floatingLabelFraction) * 0xff * (0.74f * focusFraction * (isEnabled() ? 1 : 0) + 0.26f) * (floatingLabelTextColor != -1 ? 1 : Color.alpha(floatingLabelTextColor) / 255f)));
       textPaint.setAlpha(alpha);
 
       // draw the floating label
