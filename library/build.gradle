@@ -7,8 +7,8 @@ ext {
     bintrayName = 'materialedittext'
 
     publishedGroupId = 'com.shuhart.materialedittext'
-    libraryName = 'stepview'
-    artifact = 'stepview'
+    libraryName = 'materialedittext'
+    artifact = 'materialedittext'
 
     libraryDescription = 'Material EditText'
 
