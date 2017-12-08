@@ -320,12 +320,12 @@ public class MaterialEditText extends AppCompatEditText {
   }
 
   public MaterialEditText(Context context, AttributeSet attrs) {
-    this(context, attrs, 0);
+    this(context, attrs, android.R.attr.editTextStyle);
   }
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-  public MaterialEditText(Context context, AttributeSet attrs, int style) {
-    super(context, attrs, style);
+  public MaterialEditText(Context context, AttributeSet attrs, int defStyleAttr) {
+    super(context, attrs, defStyleAttr);
       if (isInEditMode()) {
           return;
       }
@@ -340,7 +340,7 @@ public class MaterialEditText extends AppCompatEditText {
       // default baseColor is black
       int defaultBaseColor = Color.BLACK;
 
-      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText, 0, style);
+      TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText, defStyleAttr, 0);
       textColorStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColor);
       textColorHintStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColorHint);
       baseColor = typedArray.getColor(R.styleable.MaterialEditText_met_baseColor, defaultBaseColor);
