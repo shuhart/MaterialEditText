@@ -6,6 +6,7 @@ MaterialEditText
 - minSdk now is 14.
 - Ability to instantiate a view with a custom style is provided.
 - Some master branch missing code has been synced with the published library sources.
+- AutoComplete widgets are dropped.
 
 
 ![MaterialEditText](./images/material_edittext.png)
