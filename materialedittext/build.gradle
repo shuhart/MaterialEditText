@@ -15,7 +15,7 @@ ext {
     siteUrl = 'https://github.com/shuhart/MaterialEditText'
     gitUrl = 'https://github.com/shuhart/MaterialEditText.git'
 
-    libraryVersion = '2.1.5'
+    libraryVersion = '2.1.6'
 
     developerId = 'shuhart'
     developerName = 'Redrick Shuhart'

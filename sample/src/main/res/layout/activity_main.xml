@@ -429,6 +429,14 @@
         app:met_iconPadding="0dp"
         app:met_maxCharacters="5" />
 
+      <com.rengwuxian.materialedittext.MaterialEditText
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:hint="Material Design Icon"
+          app:met_iconRight="@drawable/ic_phone"
+          app:met_iconPadding="0dp"
+          app:met_maxCharacters="5" />
+
     </LinearLayout>
   </LinearLayout>
 </ScrollView>
